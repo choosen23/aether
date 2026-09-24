@@ -1,7 +1,7 @@
 # Aether Geographic Density and Demand Heatmap Design
 
 **Date:** 2026-09-24  
-**Status:** Pending written-spec approval
+**Status:** Approved
 
 ## 1. Purpose
 
@@ -238,6 +238,8 @@ disable animated color transitions.
 
 ```text
 OPEN_SKY_POLL_INTERVAL_SECONDS=60
+SOURCE_LIVE_MAX_AGE_SECONDS=75
+SOURCE_OFFLINE_MAX_AGE_SECONDS=180
 AGGREGATION_EMIT_INTERVAL_SECONDS=10
 AGGREGATION_WINDOW_SECONDS=180
 H3_RESOLUTION=4
@@ -250,7 +252,9 @@ DEMAND_ON_GROUND_WEIGHT=0.35
 The named `default-v1` coefficient set contains these exact values and is
 covered by contract examples. Operators may set OpenSky polling to 10 seconds
 for a short live demonstration, but automated tests always use recorded
-fixtures or generated internal events.
+fixtures or generated internal events. The source freshness thresholds are
+longer than the normal poll interval so a healthy anonymous source remains
+live between observations and becomes offline at the aggregate expiry horizon.
 
 ## 11. Failure Behavior
 
