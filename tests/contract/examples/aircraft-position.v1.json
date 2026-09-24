@@ -1,0 +1,26 @@
+{
+  "event_id": "e0d9ce8f95a0f9f3383a90d043",
+  "event_type": "aircraft.position",
+  "schema_version": 1,
+  "observed_at": "2026-09-24T09:10:00Z",
+  "ingested_at": "2026-09-24T09:10:01.234Z",
+  "source": "opensky",
+  "aircraft": {
+    "icao24": "3c6444",
+    "callsign": "DLH4YA",
+    "origin_country": "Germany",
+    "position": {
+      "latitude": 50.04,
+      "longitude": 8.56,
+      "barometric_altitude_m": 10668.0,
+      "on_ground": false
+    },
+    "motion": {
+      "ground_speed_mps": 232.1,
+      "track_degrees": 271.4,
+      "vertical_rate_mps": -1.2
+    },
+    "last_contact_at": "2026-09-24T09:10:00Z",
+    "position_source": "ads_b"
+  }
+}

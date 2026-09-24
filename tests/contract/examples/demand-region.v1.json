@@ -1,0 +1,15 @@
+{
+  "event_id": "f0f8b07c7dcf4fdd8bf5bcf7bd",
+  "event_type": "demand.region",
+  "schema_version": 1,
+  "generated_at": "2026-09-24T09:10:10Z",
+  "window_started_at": "2026-09-24T09:07:10Z",
+  "window_ended_at": "2026-09-24T09:10:10Z",
+  "cell_id": "841f1d7ffffffff",
+  "h3_resolution": 4,
+  "aircraft_count": 4,
+  "demand_units": 3.35,
+  "model_version": "density-linear-v1",
+  "coefficient_set": "default-v1",
+  "provenance": "modelled"
+}

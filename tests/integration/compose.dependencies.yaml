@@ -1,0 +1,11 @@
+services:
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.16
+    command: ["redpanda", "start", "--mode", "dev-container", "--smp", "1"]
+    ports:
+      - "19092:19092"
+      - "19644:9644"
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"

@@ -1,0 +1,17 @@
+{
+  "event_id": "0f4f644e1ca9d72ad0b7dfec2c",
+  "event_type": "mobility.density",
+  "schema_version": 1,
+  "generated_at": "2026-09-24T09:10:10Z",
+  "window_started_at": "2026-09-24T09:07:10Z",
+  "window_ended_at": "2026-09-24T09:10:10Z",
+  "source_event_watermark": "2026-09-24T09:10:00Z",
+  "cell_id": "841f1d7ffffffff",
+  "h3_resolution": 4,
+  "aircraft_count": 4,
+  "airborne_count": 3,
+  "on_ground_count": 1,
+  "average_altitude_m": 9144.0,
+  "average_ground_speed_mps": 214.2,
+  "provenance": "derived"
+}

@@ -1,0 +1,459 @@
+asyncapi: 3.0.0
+info:
+  title: Aether Aircraft Streaming
+  version: 1.0.0
+channels:
+  aircraft.position.v1:
+    address: aircraft.position.v1
+    messages:
+      aircraftPositionEvent:
+        $ref: '#/components/messages/AircraftPositionEventMessage'
+  api.v1.stream.aircraft:
+    address: /api/v1/stream/aircraft
+    messages:
+      streamReady:
+        $ref: '#/components/messages/StreamReadyMessage'
+      aircraftUpsert:
+        $ref: '#/components/messages/AircraftUpsertMessage'
+      aircraftRemove:
+        $ref: '#/components/messages/AircraftRemoveMessage'
+      heartbeat:
+        $ref: '#/components/messages/HeartbeatMessage'
+  mobility.density.v1:
+    address: mobility.density.v1
+    messages:
+      mobilityDensityEvent:
+        $ref: '#/components/messages/MobilityDensityEventMessage'
+      mobilityDensityRemoved:
+        $ref: '#/components/messages/MobilityDensityRemovedMessage'
+  demand.region.v1:
+    address: demand.region.v1
+    messages:
+      regionalDemandEvent:
+        $ref: '#/components/messages/RegionalDemandEventMessage'
+  api.v1.stream.mobility:
+    address: /api/v1/stream/mobility
+    messages:
+      mobilityStreamReady:
+        $ref: '#/components/messages/MobilityStreamReadyMessage'
+      mobilityCellUpsert:
+        $ref: '#/components/messages/MobilityCellUpsertMessage'
+      mobilityCellRemove:
+        $ref: '#/components/messages/MobilityCellRemoveMessage'
+      mobilityHeartbeat:
+        $ref: '#/components/messages/MobilityHeartbeatMessage'
+components:
+  messages:
+    AircraftPositionEventMessage:
+      payload:
+        $ref: '#/components/schemas/AircraftPositionEvent'
+    StreamReadyMessage:
+      payload:
+        $ref: '#/components/schemas/StreamReady'
+    AircraftUpsertMessage:
+      payload:
+        $ref: '#/components/schemas/AircraftUpsert'
+    AircraftRemoveMessage:
+      payload:
+        $ref: '#/components/schemas/AircraftRemove'
+    HeartbeatMessage:
+      payload:
+        $ref: '#/components/schemas/Heartbeat'
+    MobilityDensityEventMessage:
+      payload:
+        $ref: '#/components/schemas/MobilityDensityEvent'
+      examples:
+        - payload:
+            $ref: '../tests/contract/examples/mobility-density.v1.json'
+    MobilityDensityRemovedMessage:
+      payload:
+        $ref: '#/components/schemas/MobilityDensityRemoved'
+    RegionalDemandEventMessage:
+      payload:
+        $ref: '#/components/schemas/RegionalDemandEvent'
+      examples:
+        - payload:
+            $ref: '../tests/contract/examples/demand-region.v1.json'
+    MobilityStreamReadyMessage:
+      payload:
+        $ref: '#/components/schemas/MobilityStreamReady'
+    MobilityCellUpsertMessage:
+      payload:
+        $ref: '#/components/schemas/MobilityCellUpsert'
+    MobilityCellRemoveMessage:
+      payload:
+        $ref: '#/components/schemas/MobilityCellRemove'
+    MobilityHeartbeatMessage:
+      payload:
+        $ref: '#/components/schemas/MobilityHeartbeat'
+  schemas:
+    Position:
+      type: object
+      required: [latitude, longitude, on_ground]
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+        barometric_altitude_m:
+          type: [number, 'null']
+        on_ground:
+          type: boolean
+    Motion:
+      type: object
+      properties:
+        ground_speed_mps:
+          type: [number, 'null']
+        track_degrees:
+          type: [number, 'null']
+        vertical_rate_mps:
+          type: [number, 'null']
+    AircraftState:
+      type: object
+      required: [icao24, origin_country]
+      properties:
+        icao24:
+          type: string
+        callsign:
+          type: [string, 'null']
+        origin_country:
+          type: string
+        position:
+          oneOf:
+            - $ref: '#/components/schemas/Position'
+            - type: 'null'
+        motion:
+          oneOf:
+            - $ref: '#/components/schemas/Motion'
+            - type: 'null'
+        last_contact_at:
+          type: [string, 'null']
+          format: date-time
+        position_source:
+          type: [string, 'null']
+    ProjectedAircraft:
+      allOf:
+        - $ref: '#/components/schemas/AircraftState'
+        - type: object
+          required: [event_id, observed_at]
+          properties:
+            event_id:
+              type: string
+            observed_at:
+              type: string
+              format: date-time
+    SourceStatus:
+      type: object
+      required: [source, status, last_observation_at, age_seconds]
+      properties:
+        source:
+          type: string
+          enum: [opensky]
+        status:
+          type: string
+          enum: [live, stale, offline]
+        last_observation_at:
+          type: [string, 'null']
+          format: date-time
+        age_seconds:
+          type: [number, 'null']
+    AircraftPositionEvent:
+      type: object
+      required:
+        - event_id
+        - event_type
+        - schema_version
+        - observed_at
+        - ingested_at
+        - source
+        - aircraft
+      properties:
+        event_id:
+          type: string
+        event_type:
+          type: string
+          enum: [aircraft.position]
+        schema_version:
+          type: integer
+          enum: [1]
+        observed_at:
+          type: string
+          format: date-time
+        ingested_at:
+          type: string
+          format: date-time
+        source:
+          type: string
+          enum: [opensky]
+        aircraft:
+          $ref: '#/components/schemas/AircraftState'
+    StreamReady:
+      type: object
+      required: [message_type, schema_version, sent_at]
+      properties:
+        message_type:
+          type: string
+          enum: [stream.ready]
+        schema_version:
+          type: integer
+          enum: [1]
+        sent_at:
+          type: string
+          format: date-time
+    AircraftUpsert:
+      type: object
+      required: [message_type, schema_version, sent_at, aircraft]
+      properties:
+        message_type:
+          type: string
+          enum: [aircraft.upsert]
+        schema_version:
+          type: integer
+          enum: [1]
+        sent_at:
+          type: string
+          format: date-time
+        aircraft:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectedAircraft'
+    AircraftRemove:
+      type: object
+      required: [message_type, schema_version, sent_at, icao24]
+      properties:
+        message_type:
+          type: string
+          enum: [aircraft.remove]
+        schema_version:
+          type: integer
+          enum: [1]
+        sent_at:
+          type: string
+          format: date-time
+        icao24:
+          type: array
+          items:
+            type: string
+    Heartbeat:
+      type: object
+      required: [message_type, schema_version, sent_at, source_status]
+      properties:
+        message_type:
+          type: string
+          enum: [heartbeat]
+        schema_version:
+          type: integer
+          enum: [1]
+        sent_at:
+          type: string
+          format: date-time
+        source_status:
+          $ref: '#/components/schemas/SourceStatus'
+    MobilityDensityEvent:
+      type: object
+      required:
+        - event_id
+        - event_type
+        - schema_version
+        - generated_at
+        - window_started_at
+        - window_ended_at
+        - source_event_watermark
+        - cell_id
+        - h3_resolution
+        - aircraft_count
+        - airborne_count
+        - on_ground_count
+        - provenance
+      properties:
+        event_id:
+          type: string
+        event_type:
+          type: string
+          enum: [mobility.density]
+        schema_version:
+          type: integer
+          enum: [1]
+        generated_at:
+          type: string
+          format: date-time
+        window_started_at:
+          type: string
+          format: date-time
+        window_ended_at:
+          type: string
+          format: date-time
+        source_event_watermark:
+          type: string
+          format: date-time
+        cell_id:
+          type: string
+        h3_resolution:
+          type: integer
+        aircraft_count:
+          type: integer
+        airborne_count:
+          type: integer
+        on_ground_count:
+          type: integer
+        average_altitude_m:
+          type: [number, 'null']
+        average_ground_speed_mps:
+          type: [number, 'null']
+        provenance:
+          type: string
+          enum: [derived]
+    MobilityDensityRemoved:
+      type: object
+      required:
+        - event_id
+        - event_type
+        - schema_version
+        - removed_at
+        - cell_id
+        - h3_resolution
+        - last_window_ended_at
+        - provenance
+      properties:
+        event_id:
+          type: string
+        event_type:
+          type: string
+          enum: [mobility.density.removed]
+        schema_version:
+          type: integer
+          enum: [1]
+        removed_at:
+          type: string
+          format: date-time
+        cell_id:
+          type: string
+        h3_resolution:
+          type: integer
+        last_window_ended_at:
+          type: string
+          format: date-time
+        provenance:
+          type: string
+          enum: [derived]
+    RegionalDemandEvent:
+      type: object
+      required:
+        - event_id
+        - event_type
+        - schema_version
+        - generated_at
+        - window_started_at
+        - window_ended_at
+        - cell_id
+        - h3_resolution
+        - aircraft_count
+        - demand_units
+        - model_version
+        - coefficient_set
+        - provenance
+      properties:
+        event_id:
+          type: string
+        event_type:
+          type: string
+          enum: [demand.region]
+        schema_version:
+          type: integer
+          enum: [1]
+        generated_at:
+          type: string
+          format: date-time
+        window_started_at:
+          type: string
+          format: date-time
+        window_ended_at:
+          type: string
+          format: date-time
+        cell_id:
+          type: string
+        h3_resolution:
+          type: integer
+        aircraft_count:
+          type: integer
+        demand_units:
+          type: number
+        model_version:
+          type: string
+          enum: [density-linear-v1]
+        coefficient_set:
+          type: string
+          enum: [default-v1]
+        provenance:
+          type: string
+          enum: [modelled]
+    MobilityCell:
+      type: object
+      required: [density, demand]
+      properties:
+        density:
+          $ref: '#/components/schemas/MobilityDensityEvent'
+        demand:
+          $ref: '#/components/schemas/RegionalDemandEvent'
+    MobilityStreamReady:
+      type: object
+      required: [message_type, schema_version, sent_at]
+      properties:
+        message_type:
+          type: string
+          enum: [mobility.stream.ready]
+        schema_version:
+          type: integer
+          enum: [1]
+        sent_at:
+          type: string
+          format: date-time
+    MobilityCellUpsert:
+      type: object
+      required: [message_type, schema_version, sent_at, cells]
+      properties:
+        message_type:
+          type: string
+          enum: [mobility.cell.upsert]
+        schema_version:
+          type: integer
+          enum: [1]
+        sent_at:
+          type: string
+          format: date-time
+        cells:
+          type: array
+          items:
+            $ref: '#/components/schemas/MobilityCell'
+    MobilityCellRemove:
+      type: object
+      required: [message_type, schema_version, sent_at, cell_ids]
+      properties:
+        message_type:
+          type: string
+          enum: [mobility.cell.remove]
+        schema_version:
+          type: integer
+          enum: [1]
+        sent_at:
+          type: string
+          format: date-time
+        cell_ids:
+          type: array
+          items:
+            type: string
+    MobilityHeartbeat:
+      type: object
+      required: [message_type, schema_version, sent_at, source_status]
+      properties:
+        message_type:
+          type: string
+          enum: [mobility.heartbeat]
+        schema_version:
+          type: integer
+          enum: [1]
+        sent_at:
+          type: string
+          format: date-time
+        source_status:
+          $ref: '#/components/schemas/SourceStatus'
