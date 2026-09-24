@@ -1,0 +1,17 @@
+[project]
+name = "aether-api"
+version = "0.1.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "aether-contracts",
+  "fastapi>=0.141.1,<0.142",
+  "prometheus-client>=0.22,<0.24",
+  "redis>=6.4,<7",
+]
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aether_api"]

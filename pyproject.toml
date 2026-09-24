@@ -1,0 +1,67 @@
+[project]
+name = "aether"
+version = "0.1.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "aiokafka>=0.12,<0.13",
+  "fastapi>=0.141.1,<0.142",
+  "httpx>=0.28,<0.29",
+  "h3>=4,<5",
+  "pydantic>=2.10,<3",
+  "pyyaml>=6.0.2,<7",
+  "prometheus-client>=0.22,<0.24",
+  "redis>=6.4,<7",
+  "structlog>=25.4,<26",
+]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.14,<2",
+  "pytest>=8.3,<9",
+  "pytest-asyncio>=0.26,<1",
+  "pytest-cov>=6,<8",
+  "ruff>=0.12,<0.13",
+]
+
+[tool.uv.workspace]
+members = ["packages/*", "services/*"]
+
+[tool.uv.sources]
+aether-api = { workspace = true }
+aether-contracts = { workspace = true }
+aether-density-builder = { workspace = true }
+aether-ingestor = { workspace = true }
+aether-state-builder = { workspace = true }
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "packages/aether-contracts/src",
+  "services/api/src",
+  "services/density-builder/src",
+  "services/ingestor/src",
+  "services/state-builder/src",
+]
+testpaths = ["tests"]
+asyncio_mode = "strict"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "RUF"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unused_configs = true
+pretty = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = [
+  "packages/aether-contracts/src",
+  "services/api/src",
+  "services/density-builder/src",
+  "services/ingestor/src",
+  "services/state-builder/src",
+]

@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: aether-ingestor
+    static_configs:
+      - targets: ["ingestor:9101"]
+  - job_name: aether-state-builder
+    static_configs:
+      - targets: ["state-builder:9102"]
+  - job_name: aether-api
+    static_configs:
+      - targets: ["api:8000"]
+  - job_name: aether-density-builder
+    static_configs:
+      - targets: ["density-builder:9103"]

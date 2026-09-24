@@ -1,0 +1,126 @@
+services:
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:${REDPANDA_VERSION}
+    command:
+      - redpanda
+      - start
+      - --mode
+      - dev-container
+      - --smp
+      - "1"
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - internal://redpanda:9092,external://localhost:19092
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -q 'Healthy:.*true'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "19092:19092"
+
+  redpanda-init:
+    image: docker.redpanda.com/redpandadata/redpanda:${REDPANDA_VERSION}
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "/opt/aether/create-topics.sh"]
+    environment:
+      REDPANDA_BROKERS: redpanda:9092
+      REDPANDA_AIRCRAFT_TOPIC: aircraft.position.v1
+      REDPANDA_MOBILITY_DENSITY_TOPIC: mobility.density.v1
+      REDPANDA_DEMAND_REGION_TOPIC: demand.region.v1
+    volumes:
+      - ./infra/redpanda/create-topics.sh:/opt/aether/create-topics.sh:ro
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "6379:6379"
+
+  ingestor:
+    build:
+      context: .
+      dockerfile: docker/python.Dockerfile
+    command: ["python", "-m", "aether_ingestor.main"]
+    depends_on:
+      redpanda-init:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+
+  state-builder:
+    build:
+      context: .
+      dockerfile: docker/python.Dockerfile
+    command: ["python", "-m", "aether_state_builder.main"]
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      redpanda-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  density-builder:
+    build:
+      context: .
+      dockerfile: docker/python.Dockerfile
+    command: ["python", "-m", "aether_density_builder.main"]
+    depends_on:
+      redpanda-init:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/python.Dockerfile
+    command: ["uvicorn", "aether_api.app:create_app_from_env", "--factory", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live', timeout=2)"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_HTTP_URL: ${NEXT_PUBLIC_API_HTTP_URL}
+        NEXT_PUBLIC_API_WS_URL: ${NEXT_PUBLIC_API_WS_URL}
+        NEXT_PUBLIC_MAP_STYLE_URL: ${NEXT_PUBLIC_MAP_STYLE_URL}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-3001}:3000"
+
+  prometheus:
+    profiles: ["observability"]
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./infra/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
