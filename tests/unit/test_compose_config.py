@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import tomllib
 from pathlib import Path
 
 import yaml
@@ -43,3 +44,9 @@ def test_python_image_installs_all_workspace_packages_into_runtime_path() -> Non
     dockerfile = Path("docker/python.Dockerfile").read_text()
     assert "uv sync --frozen --no-dev --all-packages" in dockerfile
     assert 'ENV PATH="/app/.venv/bin:$PATH"' in dockerfile
+
+
+def test_api_declares_its_production_server_runtime() -> None:
+    api_project = tomllib.loads(Path("services/api/pyproject.toml").read_text())
+    dependencies = api_project["project"]["dependencies"]
+    assert any(dependency.startswith("uvicorn") for dependency in dependencies)

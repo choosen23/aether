@@ -7,6 +7,7 @@ dependencies = [
   "fastapi>=0.141.1,<0.142",
   "prometheus-client>=0.22,<0.24",
   "redis>=6.4,<7",
+  "uvicorn>=0.37,<0.38",
 ]
 
 [build-system]
