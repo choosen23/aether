@@ -1,7 +1,7 @@
 # Aether Live Aircraft Vertical Slice Design
 
 **Date:** 2026-09-24  
-**Status:** Approved in conversation; awaiting written-spec review
+**Status:** Approved
 
 ## 1. Purpose
 
@@ -250,7 +250,9 @@ models and TypeScript representations must match it through contract tests.
 ```
 
 The snapshot includes only aircraft with valid coordinates that have not passed
-the removal threshold. It supports initial page load and WebSocket recovery.
+the removal threshold. Each projected aircraft includes the source event ID and
+observation timestamp required for ordering and interpolation. It supports
+initial page load and WebSocket recovery.
 
 ### 8.2 Live stream
 
@@ -490,4 +492,3 @@ credentials, if later configured, enter through environment/secrets management
 and are never sent to the browser. Services expose only necessary ports in
 Compose. The API validates payloads and bounds batch/message sizes. CORS and
 WebSocket origins are explicit configuration rather than unrestricted defaults.
-
