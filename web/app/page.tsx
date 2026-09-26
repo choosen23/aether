@@ -7,10 +7,11 @@ import { OperationsShell } from "../components/operations-shell";
 
 import type { MapFactory } from "../components/airspace-map";
 import { createMapLibreFactory } from "../lib/maplibre-map";
-import { createRuntimeOperationsClient } from "../lib/runtime-client";
+import { createRuntimeOperationsClient, createRuntimeSimulationClient } from "../lib/runtime-client";
 
 export default function HomePage(): JSX.Element {
   const client = useMemo(() => createRuntimeOperationsClient(), []);
+  const experimentClient = useMemo(() => createRuntimeSimulationClient(), []);
   const mapFactory: MapFactory = useMemo(
     () =>
       createMapLibreFactory(
@@ -18,5 +19,13 @@ export default function HomePage(): JSX.Element {
       ),
     [],
   );
-  return <OperationsShell mapFactory={mapFactory} client={client} />;
+  const experimentMapFactory = useMemo(() => () => ({ destroy: () => undefined }), []);
+  return (
+    <OperationsShell
+      mapFactory={mapFactory}
+      client={client}
+      experimentClient={experimentClient}
+      experimentMapFactory={experimentMapFactory}
+    />
+  );
 }

@@ -1,0 +1,12 @@
+[
+  {
+    "at_ms": 10,
+    "kind": "link_failed",
+    "link_id": "direct"
+  },
+  {
+    "at_ms": 20,
+    "kind": "link_recovered",
+    "link_id": "direct"
+  }
+]

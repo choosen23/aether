@@ -5,10 +5,12 @@ import type { JSX } from "react";
 
 import { AircraftDetail } from "./aircraft-detail";
 import { AirspaceMap, type MapFactory } from "./airspace-map";
+import { ExperimentWorkspace } from "./experiment-workspace";
 import { LayerControl } from "./layer-control";
 import { MobilityCellDetail } from "./mobility-cell-detail";
 import { SourceHealth } from "./source-health";
 import type { ProjectedAircraft } from "../lib/contracts";
+import type { SimulationClient } from "../lib/simulation-client";
 import type { MobilityCell, MobilityLayerMode } from "../lib/types-mobility";
 
 type OperationsSnapshot = {
@@ -31,14 +33,24 @@ type OperationsClient = {
 type OperationsShellProps = {
   mapFactory: MapFactory;
   client: OperationsClient;
+  experimentClient?: SimulationClient;
+  experimentMapFactory?: () => { destroy: () => void };
 };
 
-export function OperationsShell({ mapFactory, client }: OperationsShellProps): JSX.Element {
+type WorkspaceMode = "operations" | "experiments";
+
+export function OperationsShell({
+  mapFactory,
+  client,
+  experimentClient,
+  experimentMapFactory,
+}: OperationsShellProps): JSX.Element {
   const [mapError, setMapError] = useState<string | null>(null);
   const [selectedIcao24, setSelectedIcao24] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const [mobilityMode, setMobilityMode] = useState<MobilityLayerMode>("aircraft");
   const [selectedCellId, setSelectedCellId] = useState<string | null>(null);
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>("operations");
 
   useEffect(() => {
     void client.start();
@@ -71,6 +83,16 @@ export function OperationsShell({ mapFactory, client }: OperationsShellProps): J
           <span className="brand-mark" aria-hidden="true">Æ</span>
           <div><h1>Aether</h1><p>European airspace twin</p></div>
         </div>
+        <nav className="workspace-nav" aria-label="Workspace mode">
+          <button type="button" onClick={() => setWorkspaceMode("operations")} aria-pressed={workspaceMode === "operations"}>
+            Live operations
+          </button>
+          {experimentClient && experimentMapFactory ? (
+            <button type="button" onClick={() => setWorkspaceMode("experiments")} aria-pressed={workspaceMode === "experiments"}>
+              Experiments
+            </button>
+          ) : null}
+        </nav>
         <div className="topbar-metrics">
           <p><strong data-testid="aircraft-count">{snapshot.aircraft.length}</strong><span>aircraft tracked</span></p>
           <p><strong>{snapshot.sourceStatus}</strong><span>source state</span></p>
@@ -78,6 +100,11 @@ export function OperationsShell({ mapFactory, client }: OperationsShellProps): J
       </header>
 
       <div id="operations-main" className="operations-main">
+        {workspaceMode === "experiments" && experimentClient && experimentMapFactory ? (
+          <ExperimentWorkspace client={experimentClient} mapFactory={experimentMapFactory} />
+        ) : null}
+        {workspaceMode === "operations" ? (
+          <>
         {mapError ? <div className="map-alert" role="alert">Map unavailable: {mapError}</div> : null}
         <AirspaceMap
           mapFactory={mapFactory}
@@ -105,6 +132,8 @@ export function OperationsShell({ mapFactory, client }: OperationsShellProps): J
           ) : null}
           <span>Derived motion between OpenSky observations</span>
         </div>
+          </>
+        ) : null}
       </div>
     </main>
   );

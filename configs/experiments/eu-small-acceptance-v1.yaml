@@ -1,0 +1,21 @@
+topology: topologies/eu-small-v1.json
+mobility: tests/fixtures/simulation/mobility.jsonl
+failure_schedule: tests/fixtures/simulation/failure-schedule.json
+seed: 7
+scale_factor: 1.0
+time_acceleration: 1.0
+max_mobility_age_ms: 30000
+objective_weights:
+  latency: 1.0
+  transfer_time: 1.0
+  queue_delay: 1.0
+  deadline_risk: 1.0
+  migration_cost: 1.0
+  transfer_cost: 1.0
+  compute_energy: 1.0
+  network_energy: 1.0
+policies:
+  - cloud_only
+  - nearest_feasible
+  - resource_first
+  - balanced

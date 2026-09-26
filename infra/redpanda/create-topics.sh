@@ -7,6 +7,12 @@ rpk --brokers "${REDPANDA_BROKERS}" topic create "${REDPANDA_AIRCRAFT_TOPIC}" \
   --topic-config retention.ms=86400000 \
   || rpk --brokers "${REDPANDA_BROKERS}" topic describe "${REDPANDA_AIRCRAFT_TOPIC}" >/dev/null
 
+rpk --brokers "${REDPANDA_BROKERS}" topic create "${REDPANDA_SIMULATION_TOPIC}" \
+  --partitions 3 \
+  --replicas 1 \
+  --topic-config retention.ms=604800000 \
+  || rpk --brokers "${REDPANDA_BROKERS}" topic describe "${REDPANDA_SIMULATION_TOPIC}" >/dev/null
+
 rpk --brokers "${REDPANDA_BROKERS}" topic create "${REDPANDA_MOBILITY_DENSITY_TOPIC}" \
   --partitions 3 \
   --replicas 1 \

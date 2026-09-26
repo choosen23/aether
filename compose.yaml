@@ -29,6 +29,7 @@ services:
     environment:
       REDPANDA_BROKERS: redpanda:9092
       REDPANDA_AIRCRAFT_TOPIC: aircraft.position.v1
+      REDPANDA_SIMULATION_TOPIC: simulation.event.v1
       REDPANDA_MOBILITY_DENSITY_TOPIC: mobility.density.v1
       REDPANDA_DEMAND_REGION_TOPIC: demand.region.v1
     volumes:

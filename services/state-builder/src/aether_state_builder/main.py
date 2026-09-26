@@ -14,6 +14,11 @@ from aether_state_builder.mobility_consumer import (
 )
 from aether_state_builder.mobility_projection import MobilityProjection
 from aether_state_builder.projection import AircraftProjection
+from aether_state_builder.simulation_consumer import (
+    SimulationConsumerRecord,
+    consume_simulation_one,
+)
+from aether_state_builder.simulation_projection import SimulationProjection
 
 
 def create_settings() -> StateBuilderSettings:
@@ -47,6 +52,18 @@ class AioKafkaMobilityConsumerAdapter:
         await self._consumer.commit()
 
 
+class AioKafkaSimulationConsumerAdapter:
+    def __init__(self, consumer: AIOKafkaConsumer) -> None:
+        self._consumer = consumer
+
+    async def getone(self) -> SimulationConsumerRecord | None:
+        record = await self._consumer.getone()
+        return SimulationConsumerRecord(key=record.key, value=record.value)
+
+    async def commit(self, _record: SimulationConsumerRecord) -> None:
+        await self._consumer.commit()
+
+
 async def run_service(settings: StateBuilderSettings) -> None:
     start_http_server(settings.metrics_port)
     redis = redis_async.from_url(settings.redis_url)  # type: ignore[no-untyped-call]
@@ -56,6 +73,10 @@ async def run_service(settings: StateBuilderSettings) -> None:
         source_name=settings.source_name,
     )
     mobility_projection = MobilityProjection(
+        redis=redis,
+        namespace=settings.redis_namespace,
+    )
+    simulation_projection = SimulationProjection(
         redis=redis,
         namespace=settings.redis_namespace,
     )
@@ -74,17 +95,30 @@ async def run_service(settings: StateBuilderSettings) -> None:
         enable_auto_commit=False,
         auto_offset_reset="earliest",
     )
+    simulation_consumer = AIOKafkaConsumer(
+        settings.redpanda_simulation_topic,
+        bootstrap_servers=settings.redpanda_brokers,
+        group_id=settings.simulation_consumer_group,
+        enable_auto_commit=False,
+        auto_offset_reset="earliest",
+    )
     await consumer.start()
     await mobility_consumer.start()
+    await simulation_consumer.start()
     adapter = AioKafkaConsumerAdapter(consumer)
     mobility_adapter = AioKafkaMobilityConsumerAdapter(mobility_consumer)
+    simulation_adapter = AioKafkaSimulationConsumerAdapter(simulation_consumer)
     try:
         async with asyncio.TaskGroup() as task_group:
             task_group.create_task(_run_aircraft_consumer(adapter, projection))
             task_group.create_task(_run_mobility_consumer(mobility_adapter, mobility_projection))
+            task_group.create_task(
+                _run_simulation_consumer(simulation_adapter, simulation_projection)
+            )
     finally:
         await consumer.stop()
         await mobility_consumer.stop()
+        await simulation_consumer.stop()
         await redis.aclose()
 
 
@@ -102,6 +136,14 @@ async def _run_mobility_consumer(
 ) -> None:
     while True:
         await consume_mobility_one(adapter, projection)
+
+
+async def _run_simulation_consumer(
+    adapter: AioKafkaSimulationConsumerAdapter,
+    projection: SimulationProjection,
+) -> None:
+    while True:
+        await consume_simulation_one(adapter, projection)
 
 
 async def main() -> None:

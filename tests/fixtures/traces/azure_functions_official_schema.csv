@@ -1,0 +1,2 @@
+source_record_id,arrival_time_ms,duration_ms,memory_mb,app_name
+af-001,1000,250,512,weather-api

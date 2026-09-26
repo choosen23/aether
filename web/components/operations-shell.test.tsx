@@ -5,6 +5,8 @@ import { expect, it } from "vitest";
 import type { MapFactory } from "./airspace-map";
 import { OperationsShell, type OperationsClient, type OperationsSnapshot } from "./operations-shell";
 import type { ProjectedAircraft } from "../lib/contracts";
+import type { SimulationClient } from "../lib/simulation-client";
+import type { SimulationStoreSnapshot } from "../lib/simulation-contracts";
 
 const makeAircraft = (icao24: string, callsign: string): ProjectedAircraft => ({
   icao24,
@@ -47,6 +49,33 @@ class FakeClient implements OperationsClient {
 
   emit(): void {
     this.listener?.();
+  }
+}
+
+class FakeSimulationClient implements SimulationClient {
+  start(): void {}
+
+  stop(): void {}
+
+  subscribe(): () => void {
+    return () => undefined;
+  }
+
+  getSnapshot(): SimulationStoreSnapshot {
+    return {
+      runs: [],
+      run: {
+        run_id: "run-1",
+        scenario_id: "azure-functions-eu-small",
+        source_trace: "azure_functions",
+        scheduler_policy: "balanced",
+        status: "completed",
+        sequence: 4,
+        provenance_notes: ["modelled origin assignment"],
+      },
+      streamConnected: true,
+      lastHeartbeatAt: null,
+    };
   }
 }
 
@@ -102,4 +131,24 @@ it("shows modelled provenance when demand mode is selected", async () => {
   fireEvent.click(screen.getAllByRole("radio", { name: "Modelled demand" })[0]);
 
   expect(screen.getByText("Modelled demand—not measured infrastructure load.")).toBeVisible();
+});
+
+it("can switch from live operations to experiments", async () => {
+  const fakeMapFactory: MapFactory = () => ({ destroy: () => undefined });
+  const fakeClient = new FakeClient(baseSnapshot);
+  const fakeExperimentClient = new FakeSimulationClient();
+
+  render(
+    <OperationsShell
+      mapFactory={fakeMapFactory}
+      client={fakeClient}
+      experimentClient={fakeExperimentClient}
+      experimentMapFactory={() => ({ destroy: () => undefined })}
+    />,
+  );
+
+  fireEvent.click(screen.getByRole("button", { name: "Experiments" }));
+
+  expect(await screen.findByText("Experiment workspace")).toBeVisible();
+  expect(screen.getByText("Azure Functions")).toBeVisible();
 });

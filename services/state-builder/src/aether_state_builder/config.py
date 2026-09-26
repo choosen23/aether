@@ -11,10 +11,12 @@ class StateBuilderSettings(BaseModel):
     source_name: str = "opensky"
     redpanda_brokers: str = "localhost:19092"
     redpanda_topic: str = "aircraft.position.v1"
+    redpanda_simulation_topic: str = "simulation.event.v1"
     redpanda_mobility_density_topic: str = "mobility.density.v1"
     redpanda_demand_region_topic: str = "demand.region.v1"
     consumer_group: str = "aether-state-builder-v1"
     mobility_consumer_group: str = "aether-mobility-state-builder-v1"
+    simulation_consumer_group: str = "aether-simulation-state-builder-v1"
     metrics_port: int = 9102
 
     @classmethod
@@ -31,6 +33,10 @@ class StateBuilderSettings(BaseModel):
             redpanda_topic=os.getenv(
                 "REDPANDA_AIRCRAFT_TOPIC", cls.model_fields["redpanda_topic"].default
             ),
+            redpanda_simulation_topic=os.getenv(
+                "REDPANDA_SIMULATION_TOPIC",
+                cls.model_fields["redpanda_simulation_topic"].default,
+            ),
             redpanda_mobility_density_topic=os.getenv(
                 "REDPANDA_MOBILITY_DENSITY_TOPIC",
                 cls.model_fields["redpanda_mobility_density_topic"].default,
@@ -45,6 +51,10 @@ class StateBuilderSettings(BaseModel):
             mobility_consumer_group=os.getenv(
                 "MOBILITY_STATE_BUILDER_GROUP",
                 cls.model_fields["mobility_consumer_group"].default,
+            ),
+            simulation_consumer_group=os.getenv(
+                "SIMULATION_STATE_BUILDER_GROUP",
+                cls.model_fields["simulation_consumer_group"].default,
             ),
             metrics_port=int(
                 os.getenv(

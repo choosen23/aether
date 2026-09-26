@@ -30,6 +30,18 @@ from aether_contracts.mobility_api import (
     MobilityStreamMessage,
     MobilityStreamReady,
 )
+from aether_contracts.simulation import (
+    CanonicalWorkload,
+    FieldProvenance,
+    ObjectiveWeights,
+    RunConfiguration,
+    RunSnapshot,
+    RunSummary,
+    SimulationEvent,
+    TopologyDocument,
+    TopologyLink,
+    TopologyNode,
+)
 
 __all__ = [
     "AircraftPositionEvent",
@@ -37,6 +49,8 @@ __all__ = [
     "AircraftSnapshot",
     "AircraftState",
     "AircraftUpsert",
+    "CanonicalWorkload",
+    "FieldProvenance",
     "Heartbeat",
     "MobilityCell",
     "MobilityCellRemove",
@@ -48,12 +62,20 @@ __all__ = [
     "MobilityStreamMessage",
     "MobilityStreamReady",
     "Motion",
+    "ObjectiveWeights",
     "Position",
     "ProjectedAircraft",
     "RegionalDemandEvent",
+    "RunConfiguration",
+    "RunSnapshot",
+    "RunSummary",
+    "SimulationEvent",
     "SourceStatus",
     "StreamMessage",
     "StreamReady",
+    "TopologyDocument",
+    "TopologyLink",
+    "TopologyNode",
     "deterministic_event_id",
     "deterministic_mobility_event_id",
 ]

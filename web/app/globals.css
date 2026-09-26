@@ -71,6 +71,20 @@ a { color: inherit; }
 .brand-mark { color: var(--track-cyan); font-size: 2rem; font-weight: 600; }
 .brand-lockup h1 { font-size: 1.05rem; letter-spacing: 0.04em; margin: 0; }
 .brand-lockup p { color: #87a3ae; font-size: 0.78rem; margin: 2px 0 0; }
+.workspace-nav { display: flex; gap: 8px; }
+.workspace-nav button {
+  background: transparent;
+  border: 1px solid rgba(100, 216, 232, 0.32);
+  border-radius: 999px;
+  color: #87a3ae;
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 6px 10px;
+}
+.workspace-nav button[aria-pressed="true"] {
+  border-color: var(--track-cyan);
+  color: var(--track-cyan);
+}
 .topbar-metrics { display: flex; gap: 36px; }
 .topbar-metrics p { display: grid; margin: 0; text-align: right; }
 .topbar-metrics strong { color: var(--track-cyan); font-size: 1.05rem; text-transform: capitalize; }

@@ -7,6 +7,7 @@ dependencies = [
   "fastapi>=0.141.1,<0.142",
   "httpx>=0.28,<0.29",
   "h3>=4,<5",
+  "pyarrow>=18,<19",
   "pydantic>=2.10,<3",
   "pyyaml>=6.0.2,<7",
   "prometheus-client>=0.22,<0.24",
@@ -31,6 +32,7 @@ aether-api = { workspace = true }
 aether-contracts = { workspace = true }
 aether-density-builder = { workspace = true }
 aether-ingestor = { workspace = true }
+aether-simulator = { workspace = true }
 aether-state-builder = { workspace = true }
 
 [tool.pytest.ini_options]
@@ -39,6 +41,7 @@ pythonpath = [
   "services/api/src",
   "services/density-builder/src",
   "services/ingestor/src",
+  "services/simulator/src",
   "services/state-builder/src",
 ]
 testpaths = ["tests"]
@@ -63,5 +66,6 @@ mypy_path = [
   "services/api/src",
   "services/density-builder/src",
   "services/ingestor/src",
+  "services/simulator/src",
   "services/state-builder/src",
 ]
