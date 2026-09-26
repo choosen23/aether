@@ -109,6 +109,12 @@ See [architecture](docs/architecture.md), [data provenance](docs/data-provenance
 the [H3 ADR](docs/adr/0005-use-h3-for-mobility-aggregation.md), and the accepted
 design docs under `docs/superpowers/specs/`.
 
+Simulation experiment runbooks:
+
+- [Trace preparation](docs/experiments/trace-preparation.md)
+- [Acceptance run](docs/experiments/acceptance-run.md)
+- [Deterministic boundary ADR](docs/adr/0006-deterministic-simulation-boundary.md)
+
 ## Phase order
 
 The next increment is geographic aggregation and a demand heatmap. Workload

@@ -45,6 +45,7 @@ export class WebSimulationClient implements SimulationClient {
   private readonly openSocket: OpenSocket;
   private readonly timerApi: TimerApi;
   private readonly retryBaseMs: number;
+  private readonly retryMaxMs: number;
 
   private listeners = new Set<() => void>();
   private retryAttempt = 0;
@@ -60,6 +61,7 @@ export class WebSimulationClient implements SimulationClient {
     openSocket: OpenSocket;
     timerApi?: TimerApi;
     retryBaseMs?: number;
+    retryMaxMs?: number;
   }) {
     this.store = options.store;
     this.wsUrl = options.wsUrl;
@@ -67,6 +69,7 @@ export class WebSimulationClient implements SimulationClient {
     this.openSocket = options.openSocket;
     this.timerApi = options.timerApi ?? defaultTimerApi;
     this.retryBaseMs = options.retryBaseMs ?? 1000;
+    this.retryMaxMs = options.retryMaxMs ?? 30_000;
   }
 
   subscribe(listener: () => void): () => void {
@@ -123,8 +126,13 @@ export class WebSimulationClient implements SimulationClient {
     };
 
     socket.onmessage = (event) => {
-      const parsed = JSON.parse(event.data) as unknown;
-      const message = assertSimulationStreamMessage(parsed);
+      let message: ReturnType<typeof assertSimulationStreamMessage>;
+      try {
+        const parsed = JSON.parse(event.data) as unknown;
+        message = assertSimulationStreamMessage(parsed);
+      } catch {
+        return;
+      }
       if (snapshotInstalled) {
         this.store.apply(message);
       } else {
@@ -166,7 +174,8 @@ export class WebSimulationClient implements SimulationClient {
     if (!this.started || this.retryHandle !== null) {
       return;
     }
-    const delay = jitter(this.retryBaseMs * 2 ** this.retryAttempt);
+    const uncapped = this.retryBaseMs * 2 ** this.retryAttempt;
+    const delay = jitter(Math.min(uncapped, this.retryMaxMs));
     this.retryAttempt += 1;
     this.retryHandle = this.timerApi.setTimeout(() => {
       this.retryHandle = null;
